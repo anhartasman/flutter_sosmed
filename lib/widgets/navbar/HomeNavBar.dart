@@ -75,25 +75,6 @@ class HomeNavBar extends StatelessWidget {
   }
 
   void changeMenu(BuildContext context, int index) {
-    // final authService = Get.find<AuthService>();
-    bool changeMenu = true;
-    switch (index) {
-      case 3:
-        changeMenu = false;
-        break;
-      default:
-        break;
-    }
-    if (changeMenu) {
-      BlocProvider.of<HomeNavBloc>(context).add(HomeNavBlocChange(index));
-    } else {
-      switch (index) {
-        case 3:
-          Get.toNamed(Routes.authLoginRoute);
-          break;
-        default:
-          break;
-      }
-    }
+    BlocProvider.of<HomeNavBloc>(context).add(HomeNavBlocChange(index));
   }
 }

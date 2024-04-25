@@ -1,3 +1,4 @@
+import 'package:fluttersosmed/architectures/domain/entities/UserSearch.dart';
 import 'package:logging/logging.dart';
 import 'package:fluttersosmed/architectures/data/datasources/local/user_local_data_source.dart';
 import 'package:fluttersosmed/architectures/domain/entities/UserProfile.dart';
@@ -16,6 +17,20 @@ class DataUserRepository implements UserRepository {
   @override
   Future<UserProfile> getUser(int id) async {
     final feedList = await UserLocalDataSource.getUser(id);
+
+    return feedList;
+  }
+
+  @override
+  Future<List<UserProfile>> getAllUser(UserSearch userSearch) async {
+    final feedList = await UserLocalDataSource.getAllUser(userSearch);
+
+    return feedList;
+  }
+
+  @override
+  Future<void> toggleFollow(int userId, bool follow) async {
+    final feedList = await UserLocalDataSource.toggleFollow(userId, follow);
 
     return feedList;
   }

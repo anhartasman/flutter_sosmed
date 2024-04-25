@@ -24,6 +24,8 @@ class UserAccount {
       name: "",
       profilePict: "",
       coverPict: "",
+      followed: false,
+      job: "",
     ),
   });
 

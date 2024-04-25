@@ -29,6 +29,8 @@ class SplashCheckBloc extends Bloc<SplashCheckBlocEvent, SplashCheckBlocState> {
               name: "Badudum",
               profilePict: "https://picsum.photos/seed/badudum/300/300",
               coverPict: "https://picsum.photos/seed/badudum/500/300",
+              followed: false,
+              job: "",
             ),
             phone: "089765432",
           ),

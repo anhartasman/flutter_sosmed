@@ -1,3 +1,9 @@
+import 'package:fluttersosmed/architectures/domain/usecases/AllUserUseCase.dart';
+import 'package:fluttersosmed/architectures/domain/usecases/ToggleFollowUseCase.dart';
+import 'package:fluttersosmed/architectures/domain/usecases/ToggleLikeUseCase.dart';
+import 'package:fluttersosmed/bloc/alluser/alluser_bloc.dart';
+import 'package:fluttersosmed/bloc/toggle_follow/toggle_follow_bloc.dart';
+import 'package:fluttersosmed/bloc/toggle_like/toggle_like_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:fluttersosmed/architectures/data/repositories/DataFeedRepository.dart';
 import 'package:fluttersosmed/architectures/data/repositories/DataUserRepository.dart';
@@ -17,6 +23,9 @@ Future<void> init() async {
 
   sl.registerLazySingleton(() => UserFeedSearchUseCase(sl()));
   sl.registerLazySingleton(() => UserProfileUseCase(sl()));
+  sl.registerLazySingleton(() => AllUserUseCase(sl()));
+  sl.registerLazySingleton(() => ToggleFollowUseCase(sl()));
+  sl.registerLazySingleton(() => ToggleLikeUseCase(sl()));
 
   // Repository
 
@@ -43,6 +52,21 @@ Future<void> init() async {
   sl.registerFactory(
     () => UserProfileBloc(
       userProfileUseCase: sl(),
+    ),
+  );
+  sl.registerFactory(
+    () => AllUserBloc(
+      allUserUseCase: sl(),
+    ),
+  );
+  sl.registerFactory(
+    () => ToggleFollowBloc(
+      toggleFollowUseCase: sl(),
+    ),
+  );
+  sl.registerFactory(
+    () => ToggleLikeBloc(
+      toggleLikeUseCase: sl(),
     ),
   );
 }

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:fluttersosmed/widgets/button/LikeButton.dart';
+import 'package:fluttersosmed/architectures/domain/entities/UserProfile.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:fluttersosmed/architectures/domain/entities/UserFeed.dart';
-import 'package:fluttersosmed/architectures/domain/entities/UserFeed.dart';
+import 'package:fluttersosmed/architectures/domain/entities/UserProfile.dart';
 import 'package:fluttersosmed/enums/enum_status_agenda.dart';
 import 'package:fluttersosmed/helpers/extensions/ext_date.dart';
 import 'package:fluttersosmed/helpers/extensions/ext_string.dart';
@@ -12,11 +11,11 @@ import 'package:fluttersosmed/theme/colors/Warna.dart';
 import 'package:fluttersosmed/theme/styles/text/poppins_style_text.dart';
 import 'package:fluttersosmed/theme/styles/text/roboto_style_text.dart';
 
-class UserFeedItem extends StatelessWidget {
-  final UserFeed userFeed;
-  const UserFeedItem({
+class UserListItem extends StatelessWidget {
+  final UserProfile theProfile;
+  const UserListItem({
     super.key,
-    required this.userFeed,
+    required this.theProfile,
   });
 
   @override
@@ -49,7 +48,7 @@ class UserFeedItem extends StatelessWidget {
             children: [
               InkWell(
                 onTap: () => Get.to(profile_feed_page(
-                  userId: userFeed.userId,
+                  userId: theProfile.id,
                 )),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,7 +57,7 @@ class UserFeedItem extends StatelessWidget {
                       padding: EdgeInsets.only(right: 8.0),
                       child: CircleAvatar(
                         radius: 18.0,
-                        backgroundImage: NetworkImage(userFeed.pict),
+                        backgroundImage: NetworkImage(theProfile.profilePict),
                       ),
                     ),
                     Expanded(
@@ -68,7 +67,7 @@ class UserFeedItem extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.only(bottom: 4.0),
                             child: Text(
-                              userFeed.name,
+                              theProfile.name,
                               style: PoppinsSemiBold11.copyWith(
                                 color: Warna.warnaUtama,
                               ),
@@ -82,15 +81,14 @@ class UserFeedItem extends StatelessWidget {
                                 Padding(
                                   padding: EdgeInsets.only(right: 8.0),
                                   child: FaIcon(
-                                    FontAwesomeIcons.clock,
+                                    FontAwesomeIcons.briefcase,
                                     size: 15,
                                     color: Warna.abuRecord,
                                   ),
                                 ),
                                 Expanded(
                                   child: Text(
-                                    userFeed.created
-                                        .toTanggal("EEE, dd/MM/yyyy"),
+                                    theProfile.job,
                                     style: PoppinsMedium11.copyWith(),
                                   ),
                                 ),
@@ -102,56 +100,6 @@ class UserFeedItem extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 13.0),
-                child: Text(
-                  userFeed.feedContent,
-                  style: PoppinsMedium13.copyWith(),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 13.0),
-                child: Divider(
-                  color: Colors.black12,
-                  height: 2.0,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 13.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(right: 16.0),
-                      child: LikeButton(userFeed),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 13.0),
-                child: Row(
-                    children: List.generate(
-                        userFeed.tags.length,
-                        (index) => Container(
-                              decoration: BoxDecoration(
-                                color: Warna.unguTua,
-                                shape: BoxShape.rectangle,
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(8.0)),
-                              ),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 13,
-                                vertical: 4,
-                              ),
-                              margin: EdgeInsets.only(right: 4),
-                              child: Text(
-                                userFeed.tags[index],
-                                style: PoppinsSemiBold10.copyWith(
-                                    color: Colors.white),
-                              ),
-                            ))),
               ),
             ],
           ),

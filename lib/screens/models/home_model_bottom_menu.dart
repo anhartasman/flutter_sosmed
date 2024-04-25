@@ -17,11 +17,11 @@ const List<HomeModelBottomMenu> bottomMenuList = [
     FontAwesomeIcons.book,
   ),
   HomeModelBottomMenu(
-    "Liked",
+    "Favourite",
     FontAwesomeIcons.heart,
   ),
   HomeModelBottomMenu(
-    "Profile",
+    "Friends",
     FontAwesomeIcons.user,
   ),
 ];

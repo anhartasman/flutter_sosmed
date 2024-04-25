@@ -4,6 +4,9 @@ import 'package:faker/faker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:fluttersosmed/architectures/data/datasources/local/queries/FeedQuery.dart';
 import 'package:fluttersosmed/architectures/data/datasources/local/queries/UserQuery.dart';
+import 'package:fluttersosmed/architectures/domain/entities/FeedSearch.dart';
+import 'package:fluttersosmed/architectures/domain/entities/UserSearch.dart';
+import 'package:fluttersosmed/helpers/util_int.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:fluttersosmed/architectures/domain/entities/UserFeed.dart';
 import 'package:fluttersosmed/architectures/domain/entities/UserProfile.dart';
@@ -27,38 +30,7 @@ class DbHelper {
     UserQuery.CREATE_TABLE,
     FeedQuery.CREATE_TABLE,
   ]; // membuat daftar table yang akan dibuat
-  final userDummy = [
-    UserProfile(
-      id: 0,
-      name: "Budi Sudianto",
-      profilePict: "https://picsum.photos/seed/profile1/300/300",
-      coverPict: "https://picsum.photos/seed/cover1/500/300",
-    ),
-    UserProfile(
-      id: 0,
-      name: "Tano Rastuti",
-      profilePict: "https://picsum.photos/seed/profile2/300/300",
-      coverPict: "https://picsum.photos/seed/cover2/500/300",
-    ),
-    UserProfile(
-      id: 0,
-      name: "Cintia Solehah",
-      profilePict: "https://picsum.photos/seed/profile3/300/300",
-      coverPict: "https://picsum.photos/seed/cover3/500/300",
-    ),
-    UserProfile(
-      id: 0,
-      name: "Mama Yanti",
-      profilePict: "https://picsum.photos/seed/profile4/300/300",
-      coverPict: "https://picsum.photos/seed/cover4/500/300",
-    ),
-    UserProfile(
-      id: 0,
-      name: "Ucup Siregar",
-      profilePict: "https://picsum.photos/seed/profile5/300/300",
-      coverPict: "https://picsum.photos/seed/cover5/500/300",
-    ),
-  ];
+
   Future<Database> initDb() async {
     //untuk menentukan nama database dan lokasi yg dibuat
     String path = "";
@@ -66,7 +38,7 @@ class DbHelper {
       path = 'contact.db';
     } else {
       Directory directory = await getApplicationDocumentsDirectory();
-      path = directory.path + 'contact.db';
+      path = '${directory.path}contact.db';
     }
     //create, read databases
     late Future<Database> todoDatabase;
@@ -98,18 +70,30 @@ class DbHelper {
         print("errornya ${err.toString()}");
       });
     }
-    int postId = 1;
+    final userDummy = List.generate(
+        30,
+        (index) => UserProfile(
+              id: index + 1,
+              name: faker.person.name(),
+              profilePict:
+                  "https://picsum.photos/seed/profile${index + 1}/300/300",
+              coverPict: "https://picsum.photos/seed/cover${index + 1}/500/300",
+              followed: false,
+              job: faker.company.position(),
+            ));
+    List<UserFeed> userFeeds = [];
     for (final dataDummy in userDummy) {
       var userMap = dataDummy.toMap();
       userMap.remove("id");
+      userMap["followed"] = 0;
       final userId = await db.insert(UserQuery.TABLE_NAME, userMap);
-      for (int i = 0; i < 5; i++) {
-        final userFeed = UserFeed(
-          id: postId,
+      for (int i = 0; i < 10; i++) {
+        userFeeds.add(UserFeed(
+          id: 0,
           userId: userId,
           name: dataDummy.name,
           pict: dataDummy.profilePict,
-          feedContent: "This is a content",
+          feedContent: generatePost(),
           created: faker.date.dateTime(
             minYear: 2023,
             maxYear: 2024,
@@ -121,14 +105,17 @@ class DbHelper {
             "Tag 3",
             "Tag 4",
           ],
-        );
-        var feedMap = userFeed.toMap();
-        feedMap["created"] = userFeed.created.toTanggal("yyyy-MM-dd");
-        feedMap["isLiked"] = userFeed.isLiked ? 1 : 0;
-        feedMap.remove("tags");
-        final insertedFeed = await db.insert(FeedQuery.TABLE_NAME, feedMap);
-        postId += 1;
+        ));
       }
+    }
+    userFeeds.shuffle();
+    for (var userFeed in userFeeds) {
+      var feedMap = userFeed.toMap();
+      feedMap["created"] = userFeed.created.toTanggal("yyyy-MM-dd");
+      feedMap["isLiked"] = userFeed.isLiked ? 1 : 0;
+      feedMap.remove("tags");
+      feedMap.remove("id");
+      final insertedFeed = await db.insert(FeedQuery.TABLE_NAME, feedMap);
     }
   }
 
@@ -142,13 +129,33 @@ class DbHelper {
     }
   }
 
-  Future<List<UserFeed>> getUserFeed({int? id}) async {
+  Future<List<UserFeed>> getUserFeed(FeedSearch feedSearch) async {
     final db = await initDb();
+    List<String> whereList = [];
+    List<String> argList = [];
+    if (feedSearch.userId != null) {
+      whereList.add("userId");
+      argList.add(feedSearch.userId!.toString());
+    }
+    if (feedSearch.favourite) {
+      whereList.add("isLiked");
+      argList.add("1");
+    }
+    String whereStr = "";
+    for (final where in whereList) {
+      if (whereStr.isNotEmpty) {
+        whereStr = whereStr + "&";
+      }
+      whereStr = whereStr + "$where=?";
+    }
+    debugPrint("get post with query $whereStr");
     final result = await db.query(
       FeedQuery.TABLE_NAME,
-      where: id == null ? null : "userId=?",
-      whereArgs: id == null ? null : [id],
+      where: whereList.isEmpty ? null : whereStr,
+      whereArgs: whereList.isEmpty ? null : argList,
       orderBy: 'id',
+      limit: feedSearch.limit,
+      offset: feedSearch.page,
     );
 
     List<UserFeed> theRespon = [];
@@ -175,19 +182,40 @@ class DbHelper {
     return theRespon;
   }
 
-  Future<UserProfile> getUser(int id) async {
+  Future<List<UserProfile>> getUser(UserSearch userSearch) async {
     final db = await initDb();
+    List<String> whereList = [];
+    List<String> argList = [];
+    if (userSearch.userId != null) {
+      whereList.add("id");
+      argList.add(userSearch.userId!.toString());
+    }
+    if (userSearch.onlyFriend) {
+      whereList.add("followed");
+      argList.add("1");
+    }
+    String whereStr = "";
+    for (final where in whereList) {
+      if (whereStr.isNotEmpty) {
+        whereStr = whereStr + "&";
+      }
+      whereStr = whereStr + "$where=?";
+    }
+    debugPrint("get user with query $whereStr");
     final result = await db.query(
       UserQuery.TABLE_NAME,
-      where: "id=?",
-      whereArgs: [id],
+      where: whereList.isEmpty ? null : whereStr,
+      whereArgs: whereList.isEmpty ? null : argList,
       orderBy: 'id',
+      limit: userSearch.limit,
+      offset: userSearch.page,
     );
 
     List<UserProfile> theRespon = [];
 
     for (var theResult in result) {
       var newMap = Map.of(theResult);
+      newMap["followed"] = newMap["followed"] == 1;
 
       var rowAbsen = UserProfile.fromMap(newMap);
 
@@ -197,7 +225,29 @@ class DbHelper {
     //   delete(theRespon[0].id);
     // }
 
-    return theRespon[0];
+    return theRespon;
+  }
+
+  Future<void> toggleFollow(int userId, bool follow) async {
+    final db = await initDb();
+    int count = await db.update(
+        UserQuery.TABLE_NAME,
+        {
+          "followed": follow ? 1 : 0,
+        },
+        where: 'id=?',
+        whereArgs: [userId]);
+  }
+
+  Future<void> toggleLike(int feedId, bool like) async {
+    final db = await initDb();
+    int count = await db.update(
+        FeedQuery.TABLE_NAME,
+        {
+          "isLiked": like ? 1 : 0,
+        },
+        where: 'id=?',
+        whereArgs: [feedId]);
   }
 
 //create databases
@@ -215,5 +265,32 @@ class DbHelper {
     int count =
         await db.delete(UserQuery.TABLE_NAME, where: 'id=?', whereArgs: [id]);
     return count;
+  }
+
+  static String generatePost() {
+    final postType = UtilInt.randomRange(0, 8);
+
+    switch (postType) {
+      case 0:
+        return "Hi, its a good day to enjoy some ${faker.food.dish()} in ${faker.food.restaurant()}";
+      case 1:
+        return "Just got job in ${faker.company.name()} as ${faker.company.position()}";
+      case 2:
+        return "Visiting my grandma in ${faker.address.city()}";
+      case 3:
+        return "Get well soon my friend ${faker.person.name()}";
+      case 4:
+        return "Need visa to visit ${faker.address.country()}";
+      case 5:
+        return "Which one you prefer? ${faker.animal.name()} or ${faker.animal.name()}";
+      case 6:
+        return "Looking for job in ${faker.address.state()}";
+      case 7:
+        return "Anyone want to buy a ${faker.animal.name()}? meet me at ${faker.address.city()}";
+      case 8:
+        return "${faker.company.position()} at your service";
+      default:
+        return "Enjoying dinner in ${faker.food.restaurant()}";
+    }
   }
 }

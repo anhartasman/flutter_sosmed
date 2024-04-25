@@ -20,4 +20,11 @@ class DataFeedRepository implements FeedRepository {
 
     return feedList;
   }
+
+  @override
+  Future<void> toggleLike(int feedId, bool like) async {
+    final feedList = await FeedLocalDataSource.toggleLike(feedId, like);
+
+    return feedList;
+  }
 }

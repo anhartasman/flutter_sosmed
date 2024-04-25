@@ -5,11 +5,15 @@ class UserProfile {
   final String name;
   final String profilePict;
   final String coverPict;
+  final bool followed;
+  final String job;
   const UserProfile({
     required this.id,
     required this.name,
     required this.profilePict,
     required this.coverPict,
+    required this.followed,
+    required this.job,
   });
 
   UserProfile copyWith({
@@ -17,12 +21,16 @@ class UserProfile {
     String? name,
     String? profilePict,
     String? coverPict,
+    bool? followed,
+    String? job,
   }) {
     return UserProfile(
       id: id ?? this.id,
       name: name ?? this.name,
       profilePict: profilePict ?? this.profilePict,
       coverPict: coverPict ?? this.coverPict,
+      followed: followed ?? this.followed,
+      job: job ?? this.job,
     );
   }
 
@@ -32,6 +40,8 @@ class UserProfile {
       'name': name,
       'profilePict': profilePict,
       'coverPict': coverPict,
+      'followed': followed,
+      'job': job,
     };
   }
 
@@ -41,6 +51,8 @@ class UserProfile {
       name: map['name'] ?? '',
       profilePict: map['profilePict'] ?? '',
       coverPict: map['coverPict'] ?? '',
+      followed: map['followed'] ?? false,
+      job: map['job'] ?? '',
     );
   }
 
@@ -51,7 +63,7 @@ class UserProfile {
 
   @override
   String toString() {
-    return 'UserProfile(id: $id, name: $name, profilePict: $profilePict, coverPict: $coverPict)';
+    return 'UserProfile(id: $id, name: $name, profilePict: $profilePict, coverPict: $coverPict, followed: $followed, job: $job)';
   }
 
   @override
@@ -62,7 +74,9 @@ class UserProfile {
         other.id == id &&
         other.name == name &&
         other.profilePict == profilePict &&
-        other.coverPict == coverPict;
+        other.coverPict == coverPict &&
+        other.followed == followed &&
+        other.job == job;
   }
 
   @override
@@ -70,6 +84,8 @@ class UserProfile {
     return id.hashCode ^
         name.hashCode ^
         profilePict.hashCode ^
-        coverPict.hashCode;
+        coverPict.hashCode ^
+        followed.hashCode ^
+        job.hashCode;
   }
 }

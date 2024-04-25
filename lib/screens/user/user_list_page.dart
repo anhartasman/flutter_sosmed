@@ -3,28 +3,49 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-import 'package:fluttersosmed/architectures/domain/entities/FeedSearch.dart';
-import 'package:fluttersosmed/architectures/domain/entities/UserFeed.dart';
-import 'package:fluttersosmed/bloc/userfeed_search/bloc.dart';
+import 'package:fluttersosmed/architectures/domain/entities/UserProfile.dart';
+import 'package:fluttersosmed/architectures/domain/entities/UserSearch.dart';
+import 'package:fluttersosmed/bloc/alluser/bloc.dart';
 import 'package:fluttersosmed/injection_container.dart' as di;
 import 'package:fluttersosmed/theme/colors/Warna.dart';
 import 'package:fluttersosmed/theme/styles/text/metropolis_style_text.dart';
-import 'package:fluttersosmed/theme/styles/text/poppins_style_text.dart';
 import 'package:fluttersosmed/widgets/ListShimmer.dart';
+import 'package:fluttersosmed/widgets/item/UserListItem.dart';
 import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
-import 'package:fluttersosmed/widgets/item/UserFeedItem.dart';
 
-class home_feed_page extends StatefulWidget {
-  const home_feed_page({super.key});
+class user_list_page extends StatelessWidget {
+  const user_list_page({
+    super.key,
+  });
 
   @override
-  State<home_feed_page> createState() => _home_feed_pageState();
+  Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ));
+    // FetchPixels();
+    // final authService = Get.find<AuthService>();
+
+    // var statusBarHeight = MediaQuery.of(context).viewPadding.top;
+    return BlocProvider<AllUserBloc>(
+      create: (BuildContext context) =>
+          di.sl<AllUserBloc>()..add(AllUserBlocRetrieve(UserSearch(page: 0))),
+      child: _user_list(),
+    );
+  }
 }
 
-class _home_feed_pageState extends State<home_feed_page> {
-  List<UserFeed> feedList = [];
+class _user_list extends StatefulWidget {
+  const _user_list({super.key});
+
+  @override
+  State<_user_list> createState() => __user_listState();
+}
+
+class __user_listState extends State<_user_list> {
+  List<UserProfile> userList = [];
   int pageNom = 0;
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
@@ -77,20 +98,20 @@ class _home_feed_pageState extends State<home_feed_page> {
               } else {
                 body = Text("No more Data");
               }
-              return BlocConsumer<UserFeedSearchBloc, UserFeedSearchBlocState>(
+              return BlocConsumer<AllUserBloc, AllUserBlocState>(
                 listener: (context, state) {
-                  if (state is UserFeedSearchBlocStateOnSuccess) {
+                  if (state is AllUserBlocStateOnSuccess) {
                     if (mounted) {
                       pageNom += 1;
                       setState(() {
-                        feedList.addAll(state.feedList);
+                        userList.addAll(state.userList);
                       });
                     }
                     _refreshController.loadComplete();
                   }
                 },
                 builder: (BuildContext context, state) {
-                  if (state is UserFeedSearchBlocStateOnStarted) {
+                  if (state is AllUserBlocStateOnStarted) {
                     return Center(
                       child: SpinKitWave(
                         color: Warna.warnaUtama,
@@ -109,26 +130,28 @@ class _home_feed_pageState extends State<home_feed_page> {
           controller: _refreshController,
           onRefresh: _onRefresh,
           onLoading: () {
-            BlocProvider.of<UserFeedSearchBloc>(context)
-                .add(UserFeedSearchBlocRetrieve(FeedSearch(page: pageNom)));
+            BlocProvider.of<AllUserBloc>(context)
+                .add(AllUserBlocRetrieve(UserSearch(page: pageNom)));
           },
-          child: ListView.builder(
-            padding: EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
-            itemCount: feedList.length,
-            shrinkWrap: true,
-            itemBuilder: (_, idx) {
-              return Padding(
-                padding: EdgeInsets.only(
-                  bottom: 25.0,
-                  top: idx == 0 ? 16 : 0,
+          child: pageNom == 0
+              ? ListShimmer()
+              : ListView.builder(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  itemCount: userList.length,
+                  shrinkWrap: true,
+                  itemBuilder: (_, idx) {
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: 25.0,
+                        top: idx == 0 ? 16 : 0,
+                      ),
+                      child: UserListItem(theProfile: userList[idx]),
+                    );
+                  },
                 ),
-                child: UserFeedItem(userFeed: feedList[idx]),
-              );
-            },
-          ),
         ));
   }
 }
