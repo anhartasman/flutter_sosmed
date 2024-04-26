@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fluttersosmed/architectures/domain/entities/UserProfile.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-import 'package:fluttersosmed/architectures/domain/entities/UserProfile.dart';
-import 'package:fluttersosmed/enums/enum_status_agenda.dart';
-import 'package:fluttersosmed/helpers/extensions/ext_date.dart';
-import 'package:fluttersosmed/helpers/extensions/ext_string.dart';
 import 'package:fluttersosmed/screens/profile/profile_feed_page.dart';
 import 'package:fluttersosmed/theme/colors/Warna.dart';
 import 'package:fluttersosmed/theme/styles/text/poppins_style_text.dart';
-import 'package:fluttersosmed/theme/styles/text/roboto_style_text.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 
 class UserListItem extends StatelessWidget {
   final UserProfile theProfile;

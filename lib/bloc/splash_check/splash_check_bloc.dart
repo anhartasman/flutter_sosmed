@@ -7,8 +7,6 @@ import 'package:get/get.dart';
 import 'package:fluttersosmed/architectures/domain/entities/UserAccount.dart';
 import 'package:fluttersosmed/architectures/domain/entities/UserProfile.dart';
 import 'package:fluttersosmed/architectures/usecase/usecase.dart';
-import 'package:fluttersosmed/config/Versi.dart';
-import 'package:fluttersosmed/config/config_url.dart';
 import 'package:fluttersosmed/services/auth_service.dart';
 import './bloc.dart';
 
